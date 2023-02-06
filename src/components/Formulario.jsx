@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Error from "./Error";
 
-function Formulario({ pacientes, setPacientes }) {
+function Formulario({ pacientes, setPacientes, paciente, setPaciente }) {
   const [mascota, setMascota] = useState("");
   const [propietario, setPropietario] = useState("");
   const [email, setEmail] = useState("");
@@ -9,6 +9,16 @@ function Formulario({ pacientes, setPacientes }) {
   const [sintomas, setSintomas] = useState("");
 
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (Object.keys(paciente).length !== 0) {
+      setMascota(paciente.mascota);
+      setPropietario(paciente.propietario);
+      setEmail(paciente.email);
+      setFecha(paciente.fecha);
+      setSintomas(paciente.sintomas);
+    }
+  }, [paciente]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,9 +40,27 @@ function Formulario({ pacientes, setPacientes }) {
       sintomas,
     };
 
-    setPacientes([...pacientes, objPaciente]);
+    if (paciente.id) {
+      // Editando el registro
+      objPaciente.id = paciente.id;
+
+      const pacientesEditados = pacientes.map((pacienteState) =>
+        pacienteState.id === paciente.id ? objPaciente : pacienteState
+      );
+
+      setPacientes(pacientesEditados);
+      setPaciente({});
+    } else {
+      // Nuevo registro
+      objPaciente.id = generarId();
+      setPacientes([...pacientes, objPaciente]);
+    }
 
     resetForm();
+  };
+
+  const generarId = () => {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
   };
 
   const resetForm = () => {
@@ -148,7 +176,7 @@ function Formulario({ pacientes, setPacientes }) {
         <input
           type="submit"
           className="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-all"
-          value="Agregar paciente"
+          value={paciente.id ? "Editar Paciente" : "Agregar Paciente"}
         />
       </form>
     </div>
